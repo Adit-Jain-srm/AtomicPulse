@@ -1,0 +1,10 @@
+stateDiagram-v2
+  [*] --> draft
+  draft --> submitted : submit (employee)
+  submitted --> in_review : manager opens
+  in_review --> draft : return_for_rework
+  in_review --> approved : approve
+  approved --> locked : auto on approve
+  locked --> reopened : admin unlock
+  reopened --> draft : admin or owner edits
+  locked --> [*]

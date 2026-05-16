@@ -1,0 +1,37 @@
+flowchart LR
+  subgraph Client[Browser]
+    UI["Next.js 16 RSC + Cache Components<br/>Tailwind + shadcn + Framer Motion"]
+  end
+
+  subgraph Vercel[Vercel Fluid Compute]
+    SA[Server Actions]
+    RH[Route Handlers]
+    WDK["Workflow DevKit<br/>(escalations + cycles)"]
+    Cron[Vercel Cron]
+    AIG[AI Gateway]
+    RC[Runtime Cache]
+  end
+
+  subgraph Neon[Neon Postgres + pgvector]
+    DB[("goals, check_ins,<br/>shared_goals, audit_log,<br/>cycles, users, orgs, embeddings")]
+  end
+
+  subgraph Microsoft[Microsoft Cloud]
+    Entra["Entra ID / MSAL"]
+    Graph["Microsoft Graph<br/>users + manager chain"]
+    Teams["Teams Incoming Webhook<br/>Adaptive Cards"]
+    Outlook["Outlook via Graph"]
+    AOAI["Azure OpenAI<br/>gpt-4o + embeddings"]
+  end
+
+  UI -->|"RSC fetch"| SA
+  UI -->|"streaming AI"| RH
+  SA --> DB
+  RH --> AIG --> AOAI
+  WDK --> DB
+  WDK --> Teams
+  WDK --> Outlook
+  Cron --> WDK
+  SA --> Graph
+  UI -->|"sign-in"| Entra
+  SA --> RC

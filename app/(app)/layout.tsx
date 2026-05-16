@@ -1,0 +1,11 @@
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth/session";
+import { AppShell } from "@/components/shell/app-shell";
+
+export const dynamic = "force-dynamic";
+
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const session = await getSession();
+  if (!session) redirect("/sign-in");
+  return <AppShell session={session}>{children}</AppShell>;
+}
