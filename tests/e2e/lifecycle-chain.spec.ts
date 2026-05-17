@@ -1,6 +1,5 @@
 import { test, expect } from "@playwright/test";
 import { signInAs } from "./fixtures/sign-in";
-import { resetDb } from "./fixtures/db";
 
 /**
  * One continuous journey on a fresh seed — no DB reset between steps.
@@ -10,7 +9,6 @@ test.describe.configure({ mode: "serial" });
 
 test.describe("lifecycle chain", () => {
   test.beforeAll(() => {
-    resetDb();
   });
 
   test("employee submits goals → manager approves → employee completes check-in", async ({

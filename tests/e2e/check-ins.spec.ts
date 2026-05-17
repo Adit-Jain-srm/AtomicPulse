@@ -1,15 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { signInAs, SEEDED_USERS } from "./fixtures/sign-in";
-import { resetDb } from "./fixtures/db";
 
 test.describe.configure({ mode: "serial" });
 
 test.describe("check-ins", () => {
   test.beforeAll(() => {
-    // Reset so the approved/locked sheets and Q1 check-ins are present in
-    // their seeded shape. Jordan Park (approved sheet under Morgan) is our
-    // employee fixture for the self-side flows.
-    resetDb();
+    // Data comes from the initial db:seed run (CI seeds once before all tests).
   });
 
   test("check-in opens for current window", async ({ page }) => {

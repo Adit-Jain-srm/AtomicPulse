@@ -1,12 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { signInAs, SEEDED_USERS } from "./fixtures/sign-in";
-import { resetDb } from "./fixtures/db";
 
 test.describe.configure({ mode: "serial" });
 
 test.describe("shared goals", () => {
   test.beforeAll(() => {
-    resetDb();
   });
 
   test("manager sees shared goals on the Shared Goals page", async ({ page }) => {

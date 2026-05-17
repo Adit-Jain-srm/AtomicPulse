@@ -1,6 +1,5 @@
 import { test, expect } from "@playwright/test";
 import { signInAs } from "./fixtures/sign-in";
-import { resetDb } from "./fixtures/db";
 
 // Run sequentially so the goal-sheet state mutations from earlier tests
 // don't leak into later tests within this file.
@@ -10,7 +9,6 @@ test.describe("employee goal sheet", () => {
   test.beforeAll(() => {
     // Wipe + reseed so the employee starts in a clean draft state.
     // Diego Alvarez (DEMO_USERS.employee) is seeded with a draft sheet.
-    resetDb();
   });
 
   test.beforeEach(async ({ page }) => {

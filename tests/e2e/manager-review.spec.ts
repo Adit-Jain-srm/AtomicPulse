@@ -1,6 +1,5 @@
 import { test, expect } from "@playwright/test";
 import { signInAs, SEEDED_USERS } from "./fixtures/sign-in";
-import { resetDb } from "./fixtures/db";
 
 test.describe.configure({ mode: "serial" });
 
@@ -8,7 +7,6 @@ test.describe("manager review", () => {
   // Reset before each test because approve / return mutate the seeded
   // submitted sheet (Alex Rivera under Morgan Chen).
   test.beforeEach(async ({ page }) => {
-    resetDb();
     await signInAs(page, "manager");
   });
 
