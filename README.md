@@ -17,6 +17,28 @@ npm install && npx drizzle-kit push --force && npm run db:seed && npm run dev
 ```
 Open `http://localhost:3000` → pick any of 12 demo personas. Everything works offline.
 
+### For Judges: Environment Configuration
+
+Copy `.env.example` to `.env.local` — **no changes needed** for the demo:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variable | Default | What It Does |
+|----------|---------|-------------|
+| `AI_MODE=stub` | Pre-set | AI Copilot works offline with deterministic responses — no API key needed |
+| `AUTH_MODE=demo` | Pre-set | Demo persona switcher on sign-in — no Azure/Entra setup needed |
+| `DATABASE_URL=file:./dev.db` | Pre-set | Local SQLite — no cloud database needed |
+| `DEMO_MODE_ENABLED=true` | Pre-set | Enables 12 pre-seeded personas (employee/manager/admin) |
+
+**Optional upgrades** (if you want to test live AI or SSO):
+- Set `AI_MODE=azure` + Azure OpenAI credentials → live GPT-4o copilot insights
+- Set `AUTH_MODE=both` + Entra credentials → Microsoft SSO alongside demo mode
+- Set `TEAMS_WEBHOOK_URL_DEFAULT` → real Teams adaptive card notifications
+
+All optional integrations fall back gracefully — the portal never breaks regardless of what's configured.
+
 ---
 
 ## How It Maps to Evaluation Criteria
