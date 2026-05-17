@@ -132,6 +132,30 @@ describe("GoalSheetDraftSchema — BRD §2.1 validation", () => {
       expect(result.success, `UoM ${t} should pass`).toBe(true);
     }
   });
+
+  it("shared goals count toward the 100% total (employee adjusts own weights to accommodate)", () => {
+    const result = GoalSheetDraftSchema.safeParse({
+      sheetId: "sheet-1",
+      goals: [
+        draftGoal({ weightageBp: 5000, position: 0 }),
+        draftGoal({ weightageBp: 4000, position: 1, title: "Own goal 2" }),
+        draftGoal({ weightageBp: 1000, position: 2, title: "Shared KPI" }),
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects when own + shared goals exceed 100%", () => {
+    const result = GoalSheetDraftSchema.safeParse({
+      sheetId: "sheet-1",
+      goals: [
+        draftGoal({ weightageBp: 6000, position: 0 }),
+        draftGoal({ weightageBp: 4000, position: 1, title: "Own goal 2" }),
+        draftGoal({ weightageBp: 1000, position: 2, title: "Shared KPI" }),
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
 });
 
 describe("CheckInSchema", () => {

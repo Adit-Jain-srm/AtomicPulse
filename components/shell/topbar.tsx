@@ -10,6 +10,16 @@ import type { Session } from "@/lib/auth/session";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
+function relativeTime(date: string | Date): string {
+  const ms = Date.now() - new Date(date).getTime();
+  const mins = Math.floor(ms / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 const ROLE_TONES = {
   admin: "info",
   manager: "success",
@@ -34,7 +44,9 @@ export function Topbar({
   onOpenMobileNav?: () => void;
 }) {
   const [menu, setMenu] = React.useState(false);
+  const [showNotifs, setShowNotifs] = React.useState(false);
   const [unread, setUnread] = React.useState(0);
+  const [notifications, setNotifications] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     let es: EventSource | null = null;
@@ -45,8 +57,10 @@ export function Topbar({
           const data = JSON.parse(ev.data);
           if (data.type === "initial") {
             setUnread(data.items?.length ?? 0);
+            setNotifications(data.items ?? []);
           } else if (data.type === "delta") {
             setUnread((n) => n + (data.items?.length ?? 0));
+            setNotifications((prev) => [...(data.items ?? []), ...prev]);
           }
         } catch {}
       };
@@ -88,14 +102,66 @@ export function Topbar({
           <Sparkles className="size-3.5" /> Copilot
           <kbd className="ml-1 rounded bg-white/20 px-1 py-0 text-[9px] font-mono">⌘J</kbd>
         </Button>
-        <Button variant="ghost" size="icon" aria-label="Notifications" onClick={() => setUnread(0)} className="relative">
-          <Bell className="size-4" />
-          {unread > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-[hsl(var(--danger))] text-[9px] font-bold text-white">
-              {unread > 9 ? "9+" : unread}
-            </span>
-          )}
-        </Button>
+        <div className="relative">
+          <Button variant="ghost" size="icon" aria-label="Notifications" onClick={() => setShowNotifs((s) => !s)} className="relative">
+            <Bell className="size-4" />
+            {unread > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-[hsl(var(--danger))] text-[9px] font-bold text-white">
+                {unread > 9 ? "9+" : unread}
+              </span>
+            )}
+          </Button>
+          <AnimatePresence>
+            {showNotifs && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setShowNotifs(false)} />
+                <motion.div
+                  initial={{ opacity: 0, y: 4, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full z-40 mt-2 w-80 overflow-hidden rounded-lg border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-0))] shadow-xl"
+                >
+                  <div className="flex items-center justify-between border-b border-[hsl(var(--border-subtle))] px-3 py-2">
+                    <span className="text-sm font-medium">Notifications</span>
+                    {notifications.length > 0 && (
+                      <button
+                        onClick={() => { setUnread(0); setNotifications([]); }}
+                        className="text-[11px] text-[hsl(var(--fg-muted))] hover:text-[hsl(var(--fg-secondary))]"
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="flex items-center justify-center py-10 text-sm text-[hsl(var(--fg-muted))]">
+                        No notifications yet
+                      </div>
+                    ) : (
+                      notifications.map((n) => {
+                        const content = (
+                          <div key={n.id} className="px-3 py-2.5 hover:bg-[hsl(var(--surface-2))] transition-colors">
+                            <div className="text-sm font-medium leading-tight">{n.title}</div>
+                            {n.body && <div className="mt-0.5 text-xs text-[hsl(var(--fg-muted))]">{n.body}</div>}
+                            <div className="mt-1 text-[10px] text-[hsl(var(--fg-muted))]">{relativeTime(n.createdAt)}</div>
+                          </div>
+                        );
+                        return n.link ? (
+                          <Link key={n.id} href={n.link} onClick={() => setShowNotifs(false)}>
+                            {content}
+                          </Link>
+                        ) : (
+                          <div key={n.id}>{content}</div>
+                        );
+                      })
+                    )}
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
         <ThemeToggle />
         <Separator orientation="vertical" className="mx-1 hidden h-6 sm:block" />
 

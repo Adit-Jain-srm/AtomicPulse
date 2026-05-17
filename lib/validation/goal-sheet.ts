@@ -3,9 +3,10 @@ import { z } from "zod";
 /**
  * BRD §2.1 validation rules — single source of truth (server + client).
  *
- * - Total weightage across all goals must equal 100% (10000 bp).
+ * - Total weightage across all goals (including shared) must equal 100% (10000 bp).
  * - Minimum weightage per goal: 10% (1000 bp).
  * - Maximum number of goals per employee: 8.
+ * - Shared goals count toward the total; recipients adjust own weights to accommodate.
  */
 
 export const UomTypeEnum = z.enum(["min_num", "min_pct", "max_num", "max_pct", "timeline", "zero"]);
@@ -38,6 +39,7 @@ export const GoalSheetDraftSchema = z
       .max(8, "Maximum of 8 goals per employee"),
   })
   .superRefine((val, ctx) => {
+    // All goals — own + shared — must sum to exactly 100% (10000 bp).
     const total = val.goals.reduce((s, g) => s + g.weightageBp, 0);
     if (total !== 10000) {
       ctx.addIssue({
