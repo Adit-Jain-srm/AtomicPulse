@@ -23,6 +23,7 @@ dev.db-journal
 .drizzle/
 .cache/
 .turbo/
+.cursor/
 
 # Playwright (e2e)
 /test-results/
