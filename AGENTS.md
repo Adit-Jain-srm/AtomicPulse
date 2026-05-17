@@ -16,5 +16,11 @@
 - Azure client: use `useDeploymentBasedUrls: true` and `AZURE_OPENAI_API_VERSION=2024-10-21` (avoid `2025-01-01-preview` on `/openai/v1/`).
 - Server Components must not pass Lucide icons to client `StatCard`; use serializable `iconName` keys from `STAT_ICON_MAP`.
 - Cycle-scoped queries should use `getActiveCycle` (`status === "open"`), not `orgId` + `.limit(1)` without status.
-- Playwright E2E runs `npm run dev` with `AI_MODE=stub` and `DEMO_AUTH_ENABLED=true`; `workers: 1` for SQLite.
+- Escalation engine: 3 triggers (`no_submit`, `no_approve`, `no_checkin`) with chain escalation, dedup, and overlap prevention via `globalThis` lock; cron every 6h in `vercel.json`.
+- Caching: `unstable_cache` on escalation queries (60s TTL), analytics queries (300s TTL), session user (60s TTL); invalidated via `revalidateTag` on mutations.
+- SSE notifications: `/api/notifications/stream` polls every 8s and sends delta events; topbar Bell uses `EventSource` for live unread badge.
+- Playwright E2E runs `npm run dev` with `AI_MODE=stub` and `DEMO_AUTH_ENABLED=true`; `workers: 1` for SQLite; 150 unit tests (Vitest) + 20+ e2e tests (desktop-chromium).
+- Vercel: `vercel.json` with `bom1` region, immutable cache headers for `/_next/static/`; production build ~33kB middleware, ~102kB shared JS.
+- CI: `drizzle-kit push --force` needed (no TTY); GitHub Actions uses `actions/checkout@v6` and `actions/setup-node@v6` (v4 tags no longer resolve).
+- Seed script `clearAll` uses try/catch per table for first-run resilience when tables don't yet exist.
 - Never store or repeat API keys, `.env.local` secrets, or credentials in docs or memory.

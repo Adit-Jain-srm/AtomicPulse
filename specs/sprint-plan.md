@@ -6,7 +6,7 @@
 **Done when:** every `specs/*.md` reviewed; ER + flow diagrams in `docs/diagrams/`.
 
 ## Phase 1 — Foundation
-- Scaffold Next.js 16, TS, Tailwind v4, shadcn, Framer Motion, ESLint/Prettier, Vitest, Playwright.
+- Scaffold Next.js 15, TS, Tailwind v4, shadcn, Framer Motion, ESLint/Prettier, Vitest, Playwright.
 - Wire Drizzle + Postgres (Neon in cloud, local Postgres or SQLite fallback for dev).
 - `lib/auth/` unified `Session` interface + `MsalAdapter` + `DemoAdapter`.
 - Layout shell (sidebar, topbar, command palette stub, theme switch, role badge).

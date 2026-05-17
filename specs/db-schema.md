@@ -178,7 +178,7 @@ erDiagram
 - pk(`entity_type`, `entity_id`)
 
 ## Local Dev Fallback
-For offline demos, a `better-sqlite3` adapter mirrors the same Drizzle schema (omitting `vector` columns). Code paths use a `Database` interface; the AI semantic-search module short-circuits to keyword search if `vector` is unavailable.
+For offline demos, a `@libsql/client` adapter mirrors the same Drizzle schema (omitting `vector` columns). Code paths use a `Database` interface; the AI semantic-search module short-circuits to keyword search if `vector` is unavailable.
 
 ## Migration Strategy
 Drizzle Kit `drizzle-kit generate` + `drizzle-kit migrate`. Each migration is reviewed in PR. Production migrations run via a CI step gated on `branch === main` and an explicit approval label.

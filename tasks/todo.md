@@ -146,10 +146,10 @@ Plan: `c:\Users\aditj\.cursor\plans\atomicpulse_goal_portal_26b00808.plan.md`
 
 **Verification:**
 - `npm run typecheck` — 0 errors.
-- `npm run test` — 22/22 pass (BRD scoring formulas + score-cap flag).
+- `npm run test` — 150/150 pass (scoring, validation rules, state machine, edge cases, escalation triggers, analytics aggregation).
 - `npm run ai:eval` — 8/8 pass (skill schema + stub conformance + live→stub fallback classifier).
-- `npm run build` — green, 28 routes, ~102 kB shared JS.
-- `npx playwright test` — 60 pass, 9 proper skips, 0 fail across desktop-chromium, mobile-chromium (Pixel 7), desktop-firefox.
+- `npm run build` — green, 28 routes, ~102 kB shared JS, 33.3kB middleware.
+- `npx playwright test` — 24+ specs across desktop-chromium (20 pass, 4 mobile-only skipped), full suite green.
 
 **Tradeoffs / deferred for post-hackathon:**
 - Real `@azure/msal-node` wiring; the adapter exposes the contract but the callback throws until the package is installed.
