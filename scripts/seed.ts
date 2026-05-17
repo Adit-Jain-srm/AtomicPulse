@@ -192,7 +192,7 @@ async function main() {
     { thrust: "Operational Excellence",  title: "Cut p99 latency on /api/v2",    uomType: "max_num", target: 250, weightageBp: 2000, position: 1, status: "on_track" },
     { thrust: "Innovation & R&D",        title: "Ship Goal Copilot GA",          uomType: "timeline", targetDate: new Date(Date.UTC(2026, 11, 15)), weightageBp: 2000, position: 2, status: "not_started" },
     { thrust: "Quality & Reliability",   title: "Sev-1 incidents this year",     uomType: "zero", target: 0, weightageBp: 1500, position: 3, status: "not_started" },
-    { thrust: "People & Culture",        title: "Mentor 2 engineers to senior",  uomType: "min_num", target: 2, weightageBp: 2000, position: 4, status: "not_started" },
+    { thrust: "People & Culture",        title: "Mentor 2 engineers to senior",  uomType: "min_num", target: 2, weightageBp: 1000, position: 4, status: "not_started" },
   ] as const;
   for (const g of alexGoals) {
     const goalId = uuid();
@@ -247,8 +247,8 @@ async function main() {
   ]);
 
   await seedSheet("diego@atomic.demo", mgrAlphaId, "draft", [
-    { thrust: "Innovation & R&D",       title: "Prototype new analytics engine",     uomType: "timeline", weight: 5000, targetDate: new Date(Date.UTC(2026, 9, 30)) },
-    { thrust: "Operational Excellence", title: "Cut CI time by 40%",                 uomType: "max_num", weight: 5000, target: 600 },
+    { thrust: "Innovation & R&D",       title: "Prototype new analytics engine",     uomType: "timeline", weight: 4500, targetDate: new Date(Date.UTC(2026, 9, 30)) },
+    { thrust: "Operational Excellence", title: "Cut CI time by 40%",                 uomType: "max_num", weight: 4500, target: 600 },
   ]);
 
   await seedSheet("mei@atomic.demo", mgrAlphaId, "locked", [
