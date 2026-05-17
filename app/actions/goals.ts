@@ -254,6 +254,7 @@ export async function submitGoalSheet(input: { sheetId: string }): Promise<Resul
 
   revalidateTag(`sheet:${sheet.id}`);
   revalidateTag(`user:${sheet.ownerId}`);
+  revalidateTag(`analytics:${session.orgId}`);
   revalidatePath(`/goals/${sheet.id}`);
   revalidatePath(`/dashboard`);
   revalidatePath(`/goals`);
@@ -306,6 +307,7 @@ export async function approveGoalSheet(input: z.infer<typeof ApproveSheetSchema>
 
   revalidateTag(`sheet:${sheet.id}`);
   revalidateTag(`user:${sheet.ownerId}`);
+  revalidateTag(`analytics:${session.orgId}`);
   revalidatePath(`/goals/${sheet.id}`);
   revalidatePath(`/dashboard`);
   revalidatePath(`/goals`);

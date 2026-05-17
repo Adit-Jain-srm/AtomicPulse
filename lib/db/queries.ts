@@ -1,5 +1,6 @@
 import "server-only";
 import { and, eq, inArray, desc, asc, count, sql, gte, isNotNull } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
 import { getDb, schema } from "./client";
 import type { Session } from "@/lib/auth/session";
 
@@ -141,21 +142,52 @@ export async function getAuditTrail(orgId: string, limit = 200) {
     .limit(limit);
 }
 
-export async function getEscalationRules(orgId: string) {
-  const db = getDb();
-  return db.select().from(schema.escalationRule).where(eq(schema.escalationRule.orgId, orgId));
+export function getEscalationRules(orgId: string) {
+  return unstable_cache(
+    async () => {
+      const db = getDb();
+      return db.select().from(schema.escalationRule).where(eq(schema.escalationRule.orgId, orgId));
+    },
+    ["escalation-rules", orgId],
+    { tags: [`escalations:${orgId}`, "escalations"], revalidate: 60 }
+  )();
 }
 
-export async function getEscalationEvents(orgId: string) {
-  const db = getDb();
-  // Events are not directly tied to org; we filter via the rule.
-  const rules = await getEscalationRules(orgId);
-  if (!rules.length) return [];
-  return db
-    .select()
-    .from(schema.escalationEvent)
-    .where(inArray(schema.escalationEvent.ruleId, rules.map((r) => r.id)))
-    .orderBy(desc(schema.escalationEvent.raisedAt));
+export function getEscalationEvents(orgId: string) {
+  return unstable_cache(
+    async () => {
+      const db = getDb();
+      const rules = await db.select().from(schema.escalationRule).where(eq(schema.escalationRule.orgId, orgId));
+      if (!rules.length) return [];
+      return db
+        .select()
+        .from(schema.escalationEvent)
+        .where(inArray(schema.escalationEvent.ruleId, rules.map((r) => r.id)))
+        .orderBy(desc(schema.escalationEvent.raisedAt));
+    },
+    ["escalation-events", orgId],
+    { tags: [`escalations:${orgId}`, "escalations"], revalidate: 60 }
+  )();
+}
+
+export function getAnalyticsData(orgId: string, cycleId: string) {
+  return unstable_cache(
+    async () => {
+      const db = getDb();
+      const sheets = await db.select().from(schema.goalSheet).where(eq(schema.goalSheet.cycleId, cycleId));
+      const goals = sheets.length
+        ? await db.select().from(schema.goal).where(inArray(schema.goal.sheetId, sheets.map((s) => s.id))).orderBy(asc(schema.goal.position))
+        : [];
+      const checkIns = goals.length
+        ? await db.select().from(schema.checkIn).where(inArray(schema.checkIn.goalId, goals.map((g) => g.id)))
+        : [];
+      const users = await db.select().from(schema.user).where(eq(schema.user.orgId, orgId)).orderBy(asc(schema.user.displayName));
+      const thrustAreas = await db.select().from(schema.thrustArea).where(and(eq(schema.thrustArea.orgId, orgId), eq(schema.thrustArea.isActive, true))).orderBy(asc(schema.thrustArea.name));
+      return { sheets, goals, checkIns, users, thrustAreas };
+    },
+    ["analytics-data", orgId, cycleId],
+    { tags: [`analytics:${orgId}`, "analytics"], revalidate: 300 }
+  )();
 }
 
 export async function loadDashboardData(session: Session) {

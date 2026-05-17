@@ -118,6 +118,7 @@ export async function upsertCheckIn(input: z.infer<typeof CheckInSchema> & { mar
 
   revalidateTag(`sheet:${sheet.id}`);
   revalidateTag(`user:${sheet.ownerId}`);
+  revalidateTag(`analytics:${session.orgId}`);
   revalidatePath(`/check-ins`);
   revalidatePath(`/dashboard`);
   return { ok: true, data: { checkInId, computedScoreBp: score.bp } };
@@ -164,6 +165,7 @@ export async function acknowledgeCheckIn(input: z.infer<typeof ManagerCheckInAck
   });
 
   revalidateTag(`sheet:${sheet.id}`);
+  revalidateTag(`analytics:${session.orgId}`);
   revalidatePath(`/check-ins`);
   revalidatePath(`/check-ins/${sheet.ownerId}`);
   revalidatePath(`/dashboard`);

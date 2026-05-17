@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { runEscalationSweep } from "@/lib/domain/escalations";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +14,7 @@ export async function GET(req: NextRequest) {
   }
   try {
     const result = await runEscalationSweep();
+    revalidateTag("escalations");
     return NextResponse.json({ ok: true, ...result, ranAt: new Date().toISOString() });
   } catch (err) {
     console.error("[cron/escalations]", err);

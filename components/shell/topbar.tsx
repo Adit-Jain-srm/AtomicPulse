@@ -34,6 +34,31 @@ export function Topbar({
   onOpenMobileNav?: () => void;
 }) {
   const [menu, setMenu] = React.useState(false);
+  const [unread, setUnread] = React.useState(0);
+
+  React.useEffect(() => {
+    let es: EventSource | null = null;
+    try {
+      es = new EventSource("/api/notifications/stream");
+      es.onmessage = (ev) => {
+        try {
+          const data = JSON.parse(ev.data);
+          if (data.type === "initial") {
+            setUnread(data.items?.length ?? 0);
+          } else if (data.type === "delta") {
+            setUnread((n) => n + (data.items?.length ?? 0));
+          }
+        } catch {}
+      };
+      es.onerror = () => {
+        es?.close();
+        setTimeout(() => {
+          es = new EventSource("/api/notifications/stream");
+        }, 10_000);
+      };
+    } catch {}
+    return () => { es?.close(); };
+  }, []);
 
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-0)/0.85)] px-3 backdrop-blur-md sm:gap-3 sm:px-4 md:px-6">
@@ -63,8 +88,13 @@ export function Topbar({
           <Sparkles className="size-3.5" /> Copilot
           <kbd className="ml-1 rounded bg-white/20 px-1 py-0 text-[9px] font-mono">⌘J</kbd>
         </Button>
-        <Button variant="ghost" size="icon" aria-label="Notifications">
+        <Button variant="ghost" size="icon" aria-label="Notifications" onClick={() => setUnread(0)} className="relative">
           <Bell className="size-4" />
+          {unread > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-[hsl(var(--danger))] text-[9px] font-bold text-white">
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
         </Button>
         <ThemeToggle />
         <Separator orientation="vertical" className="mx-1 hidden h-6 sm:block" />

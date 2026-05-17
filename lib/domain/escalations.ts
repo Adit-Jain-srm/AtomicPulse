@@ -15,7 +15,21 @@ const DAY = 24 * 60 * 60 * 1000;
  * - no_approve: sheet 'submitted'/'in_review' for > thresholdDays
  * - no_checkin: window open; no `check_in` row created by employee within thresholdDays of opensAt
  */
+const SWEEP_LOCK_KEY = "escalation_sweep_running";
+
 export async function runEscalationSweep(): Promise<{ raised: number; notified: number }> {
+  if ((globalThis as any)[SWEEP_LOCK_KEY]) {
+    return { raised: 0, notified: 0 };
+  }
+  (globalThis as any)[SWEEP_LOCK_KEY] = true;
+  try {
+    return await _runSweep();
+  } finally {
+    (globalThis as any)[SWEEP_LOCK_KEY] = false;
+  }
+}
+
+async function _runSweep(): Promise<{ raised: number; notified: number }> {
   const db = getDb();
   const rules = await db.select().from(schema.escalationRule).where(eq(schema.escalationRule.isActive, true));
   if (!rules.length) return { raised: 0, notified: 0 };
@@ -55,7 +69,6 @@ export async function runEscalationSweep(): Promise<{ raised: number; notified: 
   let raised = 0;
   let notified = 0;
 
-  // Existing events to dedupe
   const existing = await db
     .select()
     .from(schema.escalationEvent)
@@ -102,6 +115,7 @@ export async function runEscalationSweep(): Promise<{ raised: number; notified: 
         const c = cycleMap.get(w.cycleId);
         return c?.orgId === rule.orgId;
       });
+      if (!orgWindows.length) continue;
       for (const w of orgWindows) {
         if (now < w.opensAt.getTime() + thresholdMs) continue;
         if (now > w.closesAt.getTime()) continue;
@@ -124,6 +138,10 @@ export async function runEscalationSweep(): Promise<{ raised: number; notified: 
     }
   }
 
+  if (raised > 100) {
+    console.warn(`[escalations] High volume: ${raised} events raised in single sweep.`);
+  }
+
   return { raised, notified };
 }
 
@@ -134,6 +152,7 @@ async function raiseEvent(
   entityRef: string,
   targetName?: string,
 ) {
+  if (!targetUserId) return;
   await db.insert(schema.escalationEvent).values({
     id: uuid(),
     ruleId,
