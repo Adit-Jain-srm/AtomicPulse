@@ -2,7 +2,7 @@ import "server-only";
 import { v4 as uuid } from "uuid";
 import { eq, inArray } from "drizzle-orm";
 import { getDb, schema } from "@/lib/db/client";
-import { postAdaptiveCard } from "@/lib/integrations/teams";
+import { notifyEscalation } from "@/lib/integrations/teams";
 import { sendOutlookMail } from "@/lib/integrations/outlook";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -171,15 +171,15 @@ async function raiseEvent(
     body: `Escalation raised for ${entityRef}.`,
     link: "/dashboard",
   });
-  await postAdaptiveCard({
-    title: "AtomicPulse · action required",
-    subtitle: targetName ? `For ${targetName}` : undefined,
-    text: `Escalation raised: ${entityRef}`,
-    openUrl: { label: "Open AtomicPulse", url: process.env.APP_BASE_URL ?? "http://localhost:3000" },
+  await notifyEscalation({
+    targetName: targetName ?? "User",
+    trigger: entityRef.split(":")[0] ?? "escalation",
+    entityRef,
+    link: `${process.env.APP_BASE_URL ?? "http://localhost:3000"}/dashboard`,
   });
   await sendOutlookMail({
     to: "stub@example.com",
     subject: "AtomicPulse · action required",
-    bodyHtml: `<p>Escalation raised for <code>${entityRef}</code>.</p>`,
+    bodyHtml: `<p>Escalation raised for <code>${entityRef}</code>.</p><p><a href="${process.env.APP_BASE_URL ?? "http://localhost:3000"}/dashboard">Open AtomicPulse</a></p>`,
   });
 }

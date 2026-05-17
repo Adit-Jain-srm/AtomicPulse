@@ -16,6 +16,8 @@ import {
 } from "@/lib/validation/goal-sheet";
 import { canTransition, nextStatus } from "@/lib/domain/state-machine";
 import { recordAudit } from "@/lib/domain/audit";
+import { notifyGoalSubmitted, notifyGoalApproved, notifyGoalReturned } from "@/lib/integrations/teams";
+import { emailGoalSubmitted, emailGoalApproved, emailGoalReturned } from "@/lib/integrations/outlook";
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: { code: string; message: string; fields?: Record<string, string> } };
 
@@ -250,6 +252,9 @@ export async function submitGoalSheet(input: { sheetId: string }): Promise<Resul
       body: `${goals.length} goals · 100% allocated · awaiting your review`,
       link: `/goals/${sheet.id}`,
     });
+    const mgr = await db.select().from(schema.user).where(eq(schema.user.id, sheet.managerId)).limit(1);
+    notifyGoalSubmitted({ employeeName: session.displayName, goalCount: goals.length, sheetId: sheet.id });
+    if (mgr[0]?.email) emailGoalSubmitted({ toEmail: mgr[0].email, employeeName: session.displayName, goalCount: goals.length, sheetId: sheet.id });
   }
 
   revalidateTag(`sheet:${sheet.id}`);
@@ -304,6 +309,9 @@ export async function approveGoalSheet(input: z.infer<typeof ApproveSheetSchema>
     body: input.comment ?? "Sheet locked. Good luck this quarter.",
     link: `/goals/${sheet.id}`,
   });
+  const owner = await db.select().from(schema.user).where(eq(schema.user.id, sheet.ownerId)).limit(1);
+  notifyGoalApproved({ employeeName: owner[0]?.displayName ?? "Employee", sheetId: sheet.id, comment: input.comment });
+  if (owner[0]?.email) emailGoalApproved({ toEmail: owner[0].email, sheetId: sheet.id, comment: input.comment });
 
   revalidateTag(`sheet:${sheet.id}`);
   revalidateTag(`user:${sheet.ownerId}`);
@@ -356,6 +364,9 @@ export async function returnGoalSheet(input: z.infer<typeof ReturnSheetSchema>):
     body: input.comment,
     link: `/goals/${sheet.id}`,
   });
+  const ownerForReturn = await db.select().from(schema.user).where(eq(schema.user.id, sheet.ownerId)).limit(1);
+  notifyGoalReturned({ employeeName: ownerForReturn[0]?.displayName ?? "Employee", sheetId: sheet.id, comment: input.comment });
+  if (ownerForReturn[0]?.email) emailGoalReturned({ toEmail: ownerForReturn[0].email, sheetId: sheet.id, comment: input.comment });
 
   revalidateTag(`sheet:${sheet.id}`);
   revalidateTag(`user:${sheet.ownerId}`);

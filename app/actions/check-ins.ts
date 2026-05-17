@@ -10,6 +10,7 @@ import { CheckInSchema, ManagerCheckInAckSchema } from "@/lib/validation/goal-sh
 import { computeScore } from "@/lib/domain/scoring";
 import { recordAudit } from "@/lib/domain/audit";
 import { syncSharedAchievement } from "./goals";
+import { notifyCheckInSubmitted } from "@/lib/integrations/teams";
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: { code: string; message: string } };
 
@@ -107,6 +108,13 @@ export async function upsertCheckIn(input: z.infer<typeof CheckInSchema> & { mar
       title: `${session.displayName} submitted ${input.period} check-in`,
       body: `${goal.title} · ${input.status.replace("_", " ")} · ${(score.bp / 100).toFixed(0)}% score`,
       link: `/check-ins/${sheet.ownerId}`,
+    });
+    notifyCheckInSubmitted({
+      employeeName: session.displayName,
+      goalTitle: goal.title,
+      period: input.period,
+      score: Math.round(score.bp / 100),
+      sheetOwnerId: sheet.ownerId,
     });
   }
 
