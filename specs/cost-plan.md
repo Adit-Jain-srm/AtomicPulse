@@ -5,7 +5,7 @@
 | Component | Service | Plan | Est. monthly |
 |---|---|---|---|
 | Hosting + Functions | Vercel Pro | Pro | $20 / member |
-| DB | Neon Postgres | Launch (3 GB, 100h compute) | $19 |
+| DB | Turso (libsql) | Free tier (500M reads/mo) | $0 |
 | AI inference | Azure OpenAI via AI Gateway | gpt-4o + 4o-mini + embeddings | $25–$60 |
 | Mail/Graph/Teams | Microsoft Graph | Free tier | $0 |
 | Observability | Vercel Analytics + Speed Insights | included | $0 |

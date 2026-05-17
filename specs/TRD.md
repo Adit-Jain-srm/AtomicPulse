@@ -2,7 +2,7 @@
 
 ## Stack (locked)
 - **Runtime**: Node.js 22 LTS
-- **Framework**: Next.js 16 (App Router, Cache Components)
+- **Framework**: Next.js 15 (App Router, Server Components, Server Actions)
 - **Language**: TypeScript 5.6+ (strict)
 - **Styling**: Tailwind v4 + shadcn/ui (New York) + CSS variables for tokens
 - **Animation**: Framer Motion 12
@@ -122,6 +122,6 @@ This is exercised by `npm run ai:eval`'s 8th case, which synthesizes an `AbortEr
 
 `playwright.config.ts` runs three projects (desktop-chromium, mobile-chromium @ Pixel 7 / 412×915, desktop-firefox) against `npm run dev` with `AI_MODE=stub`. Important constraints:
 
-- `workers: 1` and `fullyParallel: false` because the local SQLite file does not tolerate concurrent `resetDb()` calls (`SQLITE_BUSY`). Lift to per-test schemas when migrating to Neon Postgres.
+- `workers: 1` and `fullyParallel: false` because the local SQLite file does not tolerate concurrent `resetDb()` calls (`SQLITE_BUSY`). Lift to per-test schemas when migrating to Turso cloud.
 - Tests assert against `page.locator("main")` rather than the page root so off-screen mobile-drawer duplicates do not shadow visible content.
 - Mobile-only specs use `test.skip(({ isMobile }) => !isMobile)` so the same files run safely under all three projects.

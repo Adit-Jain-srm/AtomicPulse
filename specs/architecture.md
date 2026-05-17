@@ -5,7 +5,7 @@
 ```mermaid
 flowchart LR
   subgraph Client[Browser]
-    UI["Next.js 16 RSC + Cache Components<br/>Tailwind + shadcn + Framer Motion"]
+    UI["Next.js 15 App Router<br/>RSC + Server Actions<br/>Tailwind v4 + Framer Motion"]
   end
 
   subgraph Vercel[Vercel Fluid Compute]
@@ -17,7 +17,7 @@ flowchart LR
     RC[Runtime Cache]
   end
 
-  subgraph Neon[Neon Postgres + pgvector]
+  subgraph Turso[Turso libsql - Edge DB]
     DB[("goals, check_ins,<br/>shared_goals, audit_log,<br/>cycles, users, orgs, embeddings")]
   end
 

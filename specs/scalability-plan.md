@@ -14,7 +14,7 @@ Architecture targets these spikes without paying for them between events.
 - **AI streaming** is per-user and naturally bounded by per-user rate limits.
 
 ## Data
-- **Neon Postgres** auto-scales compute; storage grows with cycles + audit log.
+- **Turso libsql** auto-scales at edge; storage grows with cycles + audit log.
 - **Read replicas** available if/when needed; current load fits single-primary.
 - **Indexes** sized to common query paths:
   - Manager team dashboard: `goal_sheet(manager_id, cycle_id)` index hits.
