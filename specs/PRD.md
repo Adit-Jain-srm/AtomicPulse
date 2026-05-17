@@ -66,4 +66,4 @@ An AI-first, enterprise-grade Goal Setting & Tracking Portal that replaces sprea
 Every screen should answer one of three questions instantly:
 1. *What do I have to do?* (action queue front and center)
 2. *Where am I off-track?* (risk badges + heatmap density)
-3. *What does the AI think?* (Copilot is one keystroke — `⌘K` then `>` — never hidden in a menu)
+3. *What does the AI think?* (Copilot is one keystroke — `⌘J` — never hidden in a menu)

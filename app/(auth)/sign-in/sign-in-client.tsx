@@ -261,7 +261,7 @@ export function SignInClient({
             >
               Press{" "}
               <kbd className="rounded bg-[hsl(var(--surface-2))] px-1.5 py-0.5 font-mono text-[10px] text-[hsl(var(--fg-secondary))]">
-                ⌘K
+                ⌘J
               </kbd>{" "}
               anywhere in the app to invoke the AI copilot.
             </motion.div>
