@@ -47,10 +47,13 @@ export function azureProvider() {
       // Leave resourceName empty; the SDK will surface a clear error at call time.
     }
   }
+  // Most Azure OpenAI resources use deployment-scoped URLs + a dated api-version,
+  // not the newer /openai/v1/ surface (which rejects many api-version strings).
   _azure = createAzure({
     apiKey: process.env.AZURE_OPENAI_API_KEY,
-    apiVersion: process.env.AZURE_OPENAI_API_VERSION,
+    apiVersion: process.env.AZURE_OPENAI_API_VERSION ?? "2024-10-21",
     resourceName,
+    useDeploymentBasedUrls: true,
   });
   return _azure;
 }
@@ -68,11 +71,7 @@ export function getModel(kind: "default" | "fast"): LanguageModel {
       return aiGateway()(MODELS[kind]) as LanguageModel;
     case "azure": {
       const deployment = process.env.AZURE_OPENAI_DEPLOYMENT ?? "gpt-4o";
-      // @ai-sdk/azure@3 exposes LanguageModelV3; ai@5's `LanguageModel` is V2.
-      // The two specs are wire-compatible at runtime for the calls we make
-      // (generateObject / streamText). Any genuine runtime incompatibility is
-      // caught by the fallback wrapper and routed to the deterministic stubs.
-      return azureProvider()(deployment) as unknown as LanguageModel;
+      return azureProvider()(deployment);
     }
     case "stub":
       throw new Error(
