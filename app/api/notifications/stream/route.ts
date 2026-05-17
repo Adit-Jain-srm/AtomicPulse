@@ -45,7 +45,8 @@ export async function GET(_req: NextRequest) {
       // close after 4 minutes (Vercel function ceiling friendly)
       setTimeout(() => {
         clearInterval(interval);
-        controller.close();
+        closed = true;
+        try { controller.close(); } catch {}
       }, 4 * 60 * 1000);
     },
   });
