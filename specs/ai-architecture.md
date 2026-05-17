@@ -9,15 +9,15 @@ AI is **first-class everywhere goals live**, never a separate "AI tab". Suggesti
 flowchart LR
   caller[Server Action / Route Handler]
   caller --> mode{AI_MODE?}
-  mode -- stub --> stub[runStub / stubStream<br/>lib/ai/stub.ts]
-  mode -- gateway --> gw[Vercel AI Gateway<br/>aiGateway()(MODELS[kind])]
-  mode -- azure --> az[createAzure(resourceName, apiKey, apiVersion)<br/>azureProvider()(AZURE_OPENAI_DEPLOYMENT)]
-  gw --> wrap[live-with-fallback<br/>AbortSignal.timeout(8s)]
+  mode -- stub --> stub["runStub / stubStream<br/>lib/ai/stub.ts"]
+  mode -- gateway --> gw["Vercel AI Gateway<br/>aiGateway()"]
+  mode -- azure --> az["createAzure<br/>azureProvider()"]
+  gw --> wrap["live-with-fallback<br/>AbortSignal.timeout(8s)"]
   az --> wrap
-  wrap -- ok --> ret[200 { ok, data }]
-  wrap -- timeout/error --> log[logAiFallback { phase, skill, mode, reason, code }]
+  wrap -- ok --> ret["200 {ok, data}"]
+  wrap -- timeout/error --> log["logAiFallback<br/>phase, skill, mode, reason, code"]
   log --> stub
-  stub --> ret2[200 { ok, data, fallback: true }]
+  stub --> ret2["200 {ok, data, fallback: true}"]
 ```
 
 | Mode      | Provider                       | Required env                                                                                                  |
