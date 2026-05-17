@@ -11,9 +11,11 @@
 - AtomicPulse stack: Next.js 15 on Vercel, TypeScript strict, Tailwind v4, Drizzle ORM, App Router + Server Actions.
 - Local database: libsql/SQLite via `DATABASE_URL=file:./dev.db`; schema is Neon Postgres–compatible for production.
 - Auth env: `AUTH_MODE` is `demo`, `entra`, or `both`; demo identities via `DEMO_MODE_ENABLED` / demo sign-in API.
-- AI env: `AI_MODE` is `stub`, `gateway`, or `azure` (tri-mode in `lib/ai/gateway.ts`); E2E defaults to `stub`.
-- Azure OpenAI: pin `@ai-sdk/azure` v2.x with `ai@5` (v3 triggers `AI_UnsupportedModelVersionError`).
-- Azure client: use `useDeploymentBasedUrls: true` and `AZURE_OPENAI_API_VERSION=2024-10-21` (avoid `2025-01-01-preview` on `/openai/v1/`).
+- MSAL: `@azure/msal-node` ConfidentialClientApplication for auth code flow + client credentials; `acquireGraphToken()` for Graph calls; listed in `next.config.ts` serverExternalPackages.
+- Graph org sync: `syncOrgFromGraph` pages /v1.0/users, resolves manager chains, maps roles from `GRAPH_ADMIN_GROUP_ID` group membership; `@microsoft/microsoft-graph-client` installed.
+- AI env: `AI_MODE` is `stub`, `gateway`, or `azure` (tri-mode in `lib/ai/gateway.ts`); `/api/copilot/insights` generates live insights from Azure OpenAI, falls back to data-driven stub.
+- Azure OpenAI: pin `@ai-sdk/azure` v2.x with `ai@5` (v3 triggers `AI_UnsupportedModelVersionError`); use `useDeploymentBasedUrls: true` and `AZURE_OPENAI_API_VERSION=2024-10-21`.
+- Notifications: Teams (`TEAMS_WEBHOOK_URL_DEFAULT`, Adaptive Card 1.5 with deep links) + Outlook email (`GRAPH_MAIL_ENABLED=true`, `MAIL_FROM_USER_ID`, Graph sendMail); all events fire both channels; stubs gracefully when not configured.
 - Server Components must not pass Lucide icons to client `StatCard`; use serializable `iconName` keys from `STAT_ICON_MAP`.
 - Cycle-scoped queries should use `getActiveCycle` (`status === "open"`), not `orgId` + `.limit(1)` without status.
 - Escalation engine: 3 triggers (`no_submit`, `no_approve`, `no_checkin`) with chain escalation, dedup, and overlap prevention via `globalThis` lock; cron every 6h in `vercel.json`.

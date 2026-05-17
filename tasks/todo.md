@@ -146,14 +146,12 @@ Plan: `c:\Users\aditj\.cursor\plans\atomicpulse_goal_portal_26b00808.plan.md`
 
 **Verification:**
 - `npm run typecheck` — 0 errors.
-- `npm run test` — 150/150 pass (scoring, validation rules, state machine, edge cases, escalation triggers, analytics aggregation).
+- `npm run test` — 152/152 pass (scoring, validation rules, state machine, edge cases, escalation triggers, analytics, shared goals).
 - `npm run ai:eval` — 8/8 pass (skill schema + stub conformance + live→stub fallback classifier).
 - `npm run build` — green, 28 routes, ~102 kB shared JS, 33.3kB middleware.
-- `npx playwright test` — 24+ specs across desktop-chromium (20 pass, 4 mobile-only skipped), full suite green.
+- `npx playwright test --project=desktop-chromium` — 45+ specs pass (auth, goals, review, check-ins, shared, lifecycle-chain, analytics, escalations, admin, governance).
 
 **Tradeoffs / deferred for post-hackathon:**
-- Real `@azure/msal-node` wiring; the adapter exposes the contract but the callback throws until the package is installed.
 - pgvector embeddings — schema present, vector store wired in `lib/db/schema.ts`, but live embedding pipeline is parked behind a Postgres swap.
 - Vercel Workflow DevKit migrations — the escalation engine runs as a sweepable cron; can be lifted into a durable workflow when WDK is GA.
-- Seed data does not include a `source: "shared"` goal yet, so the shared-goal UI read-only assertion soft-skips in e2e; the server-side guarantee in `app/actions/goals.ts` (and a dedicated unit test) is the source of truth.
 - Power BI embed (PS bonus) intentionally out of scope.

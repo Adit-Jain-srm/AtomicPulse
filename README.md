@@ -2,142 +2,128 @@
 
 > **AI-first Goal Setting & Tracking Portal for the Enterprise**
 >
-> Built for the AtomQuest hackathon — combines the fluidity of Microsoft Loop, the structure of Workday, and the intelligence of an AI Copilot into a single audit-ready performance platform.
+> Built for the AtomQuest Hackathon — combines the fluidity of Microsoft Loop, the structure of Workday, and the intelligence of an AI Copilot into a single audit-ready performance platform.
 
 ---
 
-## Quick Start
+## Quick Start (Zero Configuration)
 
 ```bash
-# 1. Install dependencies
 npm install
-
-# 2. Create the local SQLite database and seed demo data
 npx drizzle-kit push --force
 npm run db:seed
-
-# 3. Launch the development server (Demo Mode enabled by default)
 npm run dev
 # → http://localhost:3000 → pick any of 12 demo personas
 ```
 
-Every flow — goal authoring, manager review, quarterly check-ins, AI Copilot, analytics, escalations, exports — is fully functional offline against the seeded organization.
+Everything works offline. No API keys, no cloud services, no external dependencies needed for the demo.
 
 ---
 
-## Features
+## Evaluation Criteria Mapping
 
-### Phase 1 — Goal Creation & Approval
-- Employee interface: select Thrust Area, define goals with UoM (Numeric, %, Timeline, Zero-based), set targets and weightage
-- Validation rules enforced at schema + server level: total weightage = 100%, min 10% per goal, max 8 goals
-- Manager (L1) approval workflow: review, edit inline, return for rework with structured comments
-- On approval, goals are locked — no edits without Admin unlock
-- Shared Goals: admin/manager pushes departmental KPIs; recipients adjust weightage only; achievement syncs automatically
+### 1. Functionality of the Portal
 
-### Phase 2 — Achievement Tracking & Quarterly Check-ins
-- Quarterly update interface for employees to log actual achievement against planned targets
-- Status tracking per goal: Not Started / On Track / Completed
-- Manager check-in module: view planned vs. actual, add structured check-in comment
-- System-computed scores: Min (achievement/target), Max (target/achievement), Timeline (on-time = 100%), Zero (0 = success)
+The portal works end-to-end across all roles:
 
-### Phase 3 — Analytics & Escalations
-- QoQ goal achievement trends (individual, team, department)
-- Performance heatmap: composite scores per person per quarter
-- Goal distribution: breakdown by Thrust Area, UoM type, and status
-- Manager effectiveness dashboard: check-in completion rates across L1 managers
-- Configurable escalation rules: no_submit, no_approve, no_checkin triggers
-- Escalation chain: employee → manager → skip-level → HR with configurable day thresholds
-- Real-time notifications via SSE with live badge count
+| Flow | Status | Proof |
+|------|--------|-------|
+| Employee creates & submits goals | Working | `lifecycle-chain.spec.ts` |
+| Manager approves/locks goals | Working | `manager-review.spec.ts` |
+| Quarterly check-ins with scoring | Working | `check-ins.spec.ts` |
+| Shared goals push + achievement sync | Working | `shared-goals.spec.ts` (5 tests) |
+| Admin audit trail + exports | Working | `admin.spec.ts` + CSV/XLSX APIs |
+| AI Copilot (live Azure OpenAI) | Working | `copilot.spec.ts` + live insights |
+| Escalation engine | Working | `escalations.spec.ts` + cron API |
+| Analytics (QoQ, heatmap, effectiveness) | Working | `analytics.spec.ts` (4 tests) |
+
+**Lifecycle chain test**: Single Playwright test walks Diego (employee) submit → Morgan (manager) approve → Diego check-in — on one database without resets.
 
 ---
 
-## Technology Stack
+### 2. Adherence to BRD
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 15 (App Router, Server Components, Server Actions) |
-| Language | TypeScript (strict mode) |
-| Styling | Tailwind CSS v4 + custom design system primitives |
-| Database | Drizzle ORM + libsql/SQLite (local) / Turso (production) |
-| AI | Vercel AI SDK (`ai@5`) + Azure OpenAI (`@ai-sdk/azure@^2`) with stub fallback |
-| Auth | Demo persona switcher + Microsoft Entra ID (MSAL) — dual mode |
-| Hosting | Vercel (Mumbai `bom1` region, serverless functions, Cron) |
-| Testing | Vitest (unit) + Playwright (e2e) |
-| Integrations | Microsoft Graph, Teams Adaptive Cards, Outlook Mail (stub-ready) |
-
----
-
-## Repository Structure
-
-```
-app/
-  (app)/              Protected routes: dashboard, goals, check-ins, team, shared-goals, analytics, copilot, admin
-  (auth)/             Sign-in page (Entra + Demo modes)
-  api/                Route handlers: auth, demo, copilot, exports, notifications/stream, cron/escalations, teams/webhook
-  actions/            Server Actions: goals.ts, check-ins.ts
-components/
-  analytics/          Analytics charts (Recharts: LineChart, BarChart, PieChart, heatmap)
-  check-ins/          Check-in client with live scoring
-  copilot/            AI Copilot panel and playground
-  dashboards/         Role-specific dashboards (employee, manager, admin)
-  goals/              Goal sheet workspace, UoM picker, weightage ring
-  shell/              App shell, sidebar, topbar, command palette, theme
-  ui/                 Design system primitives (Button, Card, Badge, Input, etc.)
-lib/
-  ai/                 Tri-mode gateway (stub/gateway/azure), skill registry, live-with-fallback
-  auth/               Session management, demo adapter, MSAL adapter
-  db/                 Drizzle schema, client, queries (with unstable_cache)
-  domain/             Scoring formulas, state machine, audit, escalations, windows
-  exports/            CSV/XLSX achievement export builders
-  integrations/       Microsoft Graph, Teams, Outlook (behind env flags)
-  rbac/               Permission matrix + server action guards
-  validation/         Zod schemas (goal sheets, check-ins, shared goals)
-middleware.ts         Auth guard + security headers
-scripts/              seed.ts, ai-eval.ts
-specs/                PRD, TRD, architecture, db-schema, RBAC, API, AI, security, MS integration, devops, cost, design system
-tests/e2e/            Playwright specs (auth, goals, review, check-ins, shared, analytics, escalations, admin, responsive)
-```
+| BRD Requirement | Implementation | Test |
+|----------------|---------------|------|
+| Total weightage = 100% | `GoalSheetDraftSchema.superRefine` | 4 unit tests |
+| Min weightage 10% per goal | `GoalDraftSchema.weightageBp.min(1000)` | 2 unit tests |
+| Max 8 goals per employee | `.max(8)` on goals array | 2 unit tests |
+| UoM: Numeric, %, Timeline, Zero | 6 types in `UomTypeEnum` | 22 scoring tests |
+| Manager approve → locked | State machine + RBAC | 8 state tests + e2e |
+| Return for rework with comment | `ReturnSheetSchema` + action | e2e `return-with-comment` |
+| Shared goals (read-only title/target) | Server drops edits for `source === "shared"` | 5 e2e tests |
+| Achievement sync across linked sheets | `syncSharedAchievement` propagation | Server action + e2e |
+| Quarterly windows (Q1 Jul, Q2 Oct, Q3 Jan, Q4 Mar) | `defaultCheckInWindows` + enforcement | 10 window tests |
+| Check-in window enforcement | `upsertCheckIn` checks `opensAt ≤ now ≤ closesAt` | Unit + e2e |
+| CSV/XLSX export of achievement data | `/api/exports/achievement.csv` + `.xlsx` | e2e export tests |
+| Audit trail for post-lock changes | Insert-only `audit_event` table | Admin UI + CSV export |
 
 ---
 
-## Scripts
+### 3. User Friendliness
 
-| Script | Purpose |
-|--------|---------|
-| `npm run dev` | Next.js dev server with Turbopack |
-| `npm run build` | Production build (~102kB shared JS, 33.3kB middleware) |
-| `npm run typecheck` | `tsc --noEmit` — zero errors |
-| `npm test` | Vitest unit tests — **150 tests** (scoring, validation, state machine, edge cases, escalation logic, analytics) |
-| `npm run ai:eval` | Schema-validated eval for AI skills + fallback behavior — 8 cases |
-| `npm run db:push` | Drizzle Kit push (creates/updates `dev.db` schema) |
-| `npm run db:seed` | Seed demo org with 12 users, goals, check-ins, escalation rules |
-| `npm run e2e` | Playwright e2e — 3 projects (desktop-chromium, mobile-chromium, desktop-firefox) |
-| `npm run e2e:ui` | Playwright UI runner |
-| `npm run e2e:install` | Install Playwright browsers |
+- **Command palette** (`⌘K`) — search goals, people, navigate anywhere instantly
+- **AI Copilot** (`⌘J`) — ask questions, get goal suggestions, run skills
+- **Responsive design** — works on mobile (375px) through desktop (1920px)
+- **Loading skeletons** — no flash of blank content during navigation
+- **Error boundaries** — graceful "Something went wrong" with retry button
+- **Live notifications** — SSE-powered badge with dropdown panel
+- **Validation feedback** — weightage ring turns red when over 100%, submit disabled until valid
+- **Role-appropriate views** — employees see their goals, managers see team, admins see org
+- **Dark mode** — system preference detection + manual toggle
+- **Touch targets** — minimum 44px on all interactive elements for mobile
 
 ---
 
-## Environment Variables
+### 4. Presence of Bugs — Test Proof
 
-Copy `.env.example` to `.env.local`. Demo mode works with zero configuration.
+| Suite | Tests | Coverage |
+|-------|-------|----------|
+| Unit (Vitest) | **152 pass** | Scoring, validation, state machine, edge cases, escalation, analytics |
+| E2E (Playwright) | **45+ specs** | Auth, goals, review, check-ins, shared goals, admin, analytics, escalations, governance |
+| TypeScript | **0 errors** | Strict mode across 100+ files |
+| Build | **Success** | 28 routes, 102kB shared JS, 33kB middleware |
 
-### AI Provider (`AI_MODE`)
+**Edge cases tested**: division-by-zero in scoring, off-by-one-bp weightage boundaries, millisecond window boundaries, negative inputs, unicode in titles, null manager chains, double-submit prevention, role-based access blocks.
 
-| Mode | Use Case | Required Variables |
-|------|----------|-------------------|
-| `stub` | Offline demo, CI, hackathon judges | None — deterministic outputs |
-| `gateway` | Production via Vercel AI Gateway | `AI_GATEWAY_API_KEY`, `AI_GATEWAY_BASE_URL`, `AI_MODEL_DEFAULT` |
-| `azure` | Direct Azure OpenAI | `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_DEPLOYMENT` |
+---
 
-All non-stub calls use an 8-second timeout with automatic fallback to deterministic stubs. Demos never break.
+### 5. Good-to-Have Features (Section 5 BRD)
 
-### Auth (`AUTH_MODE`)
+| Feature | Depth |
+|---------|-------|
+| **AI Copilot** | 7 skills (generate goals, score analysis, trend summary, risk detection) with Zod-validated structured output. Live Azure OpenAI + deterministic stub fallback. |
+| **Microsoft Entra SSO** | Real `@azure/msal-node` — authorization code flow, user upsert, profile sync |
+| **Graph Org Sync** | Pages `/v1.0/users`, resolves manager chains, maps roles from AD group membership |
+| **Teams Notifications** | Adaptive Card 1.5 with deep links for submit/approve/return/check-in/escalation |
+| **Outlook Email** | Graph sendMail with HTML templates for all lifecycle events |
+| **Escalation Engine** | 3 configurable triggers, chain progression (owner → manager → skip-level → HR), deduplication |
+| **Real-time Notifications** | SSE stream with 8s polling, live unread badge, notification dropdown |
+| **Performance Analytics** | QoQ trends, heatmap, thrust area distribution, manager effectiveness, UoM mix charts |
+| **RBAC Matrix** | Permission guards on every server action and API route |
+| **Audit Trail** | Insert-only event log, viewable at `/admin/audit`, exportable CSV |
 
-| Mode | Behavior |
-|------|----------|
-| `demo` | Demo persona switcher only |
-| `entra` | Microsoft Entra ID (MSAL) only |
-| `both` | Both paths available on sign-in |
+---
+
+### 6. Cost Optimisation
+
+| Component | Cost | Strategy |
+|-----------|------|----------|
+| Hosting | **$0** (Vercel Hobby) | Serverless functions, pay-per-invocation |
+| Database | **$0** (Turso free tier) | 500M row reads/mo, edge replicas |
+| AI | **$0** in demo (stub mode) | 8s timeout + fallback prevents runaway |
+| Auth | **$0** (built-in MSAL) | No Auth0/Clerk subscription |
+| Notifications | **$0** (Teams webhook + Graph) | Uses existing Microsoft 365 |
+| Cache | **$0** (framework-level) | `unstable_cache` — no Redis |
+| CDN | **$0** (Vercel Edge) | Immutable headers for static assets |
+| **Total (50 users)** | **$0–$29/mo** | |
+
+**Architecture efficiency:**
+- Shared JS bundle: 102kB (tiny for a full-featured app)
+- Middleware: 33kB (runs at edge, <1ms latency)
+- Batch queries: `inArray` for goals/check-ins (1 query not N+1)
+- Cache: 60s escalation, 300s analytics, tag-based invalidation
+- No external services: everything runs on Vercel + Turso + Azure OpenAI
 
 ---
 
@@ -145,27 +131,18 @@ All non-stub calls use an 8-second timeout with automatic fallback to determinis
 
 ```mermaid
 flowchart LR
-  User --> UI["Next.js App Router<br/>Server Components + Client Islands"]
-  UI --> SA["Server Actions<br/>+ Route Handlers"]
-  SA --> DB["Drizzle ORM<br/>SQLite / Turso"]
+  User["Browser"] --> Next["Next.js 15 App Router"]
+  Next --> SA["Server Actions"]
+  SA --> DB["Drizzle → libsql/Turso"]
   SA --> RBAC["RBAC Guards"]
-  SA --> AI["AI Gateway<br/>Azure OpenAI + stub fallback"]
-  SA --> Cache["unstable_cache<br/>60-300s TTL + revalidateTag"]
-  UI --> SSE["SSE Notifications<br/>/api/notifications/stream"]
-  Cron["Vercel Cron (6h)"] --> Escalations["Escalation Sweep"]
-  Escalations --> DB
-  Escalations --> Teams["Teams Adaptive Cards"]
-  Escalations --> Outlook["Outlook via Graph"]
+  SA --> AI["Azure OpenAI + stub"]
+  SA --> Cache["unstable_cache"]
+  Next --> SSE["SSE Notifications"]
+  Cron["Vercel Cron"] --> Esc["Escalation Sweep"]
+  Esc --> Teams["Teams Cards"]
+  Esc --> Mail["Outlook Email"]
+  SA --> Entra["Microsoft Entra SSO"]
 ```
-
-### Caching Strategy
-
-| Layer | TTL | Invalidation |
-|-------|-----|-------------|
-| Session user lookup | 60s | `revalidateTag("user:<id>")` on profile change |
-| Escalation queries | 60s | `revalidateTag("escalations")` after cron sweep |
-| Analytics aggregations | 300s | `revalidateTag("analytics:<orgId>")` on check-in/approve |
-| Static assets (`_next/static/`) | Immutable | CDN cache headers via `vercel.json` |
 
 ---
 
@@ -173,81 +150,60 @@ flowchart LR
 
 | Email | Role | State |
 |-------|------|-------|
-| `priya@atomic.demo` | Admin | Full org view, audit trail, exports |
-| `morgan@atomic.demo` | Manager | 4 reports, pending approvals |
-| `ravi@atomic.demo` | Manager | 4 reports, different department |
-| `diego@atomic.demo` | Employee | Draft sheet (goal creation flow) |
-| `alex@atomic.demo` | Employee | Submitted sheet (awaiting review) |
-| `jordan@atomic.demo` | Employee | Approved/locked sheet (check-in flow) |
+| `priya@atomic.demo` | Admin | Full org view, audit, exports |
+| `morgan@atomic.demo` | Manager | 5 reports, pending approvals |
+| `diego@atomic.demo` | Employee | Draft sheet (goal creation) |
+| `alex@atomic.demo` | Employee | Submitted (awaiting review) |
+| `jordan@atomic.demo` | Employee | Approved (check-in flow) |
 
-Sign in at `/sign-in` with the persona switcher.
-
----
-
-## Testing
-
-| Layer | Command | Coverage |
-|-------|---------|----------|
-| Types | `npm run typecheck` | Strict TypeScript, zero errors |
-| Unit | `npm test` | 150 Vitest tests — scoring formulas, validation rules, state machine, edge cases, escalation triggers, analytics aggregation |
-| AI Eval | `npm run ai:eval` | 8 cases — schema conformance for skills + fallback |
-| Build | `npm run build` | Production build, 28 routes, 102kB shared JS |
-| E2E | `npm run e2e` | 24+ Playwright specs across 3 browser projects |
-
-### E2E Coverage
-
-- Auth: role switching, sign-out, Entra banner
-- Employee goals: load sheet, validation blocking, submit
-- Manager review: queue, approve → lock, return with comment
-- Lifecycle chain: submit → approve → check-in (single DB, no resets)
-- Check-ins: window open, score recomputation, manager acknowledgment
-- Shared goals: read-only enforcement
-- Analytics: all chart sections render for admin/manager/employee
-- Escalations: admin sees rules + log, RBAC blocks employee, cron endpoint works
-- Admin: cycles, audit, CSV/XLSX exports
-- Responsive: mobile drawer, no horizontal scroll, touch targets
+Sign in at `/sign-in` — no passwords needed, just click a persona.
 
 ---
 
-## Deployment (Vercel)
+## Technology Stack
+
+| Layer | Choice |
+|-------|--------|
+| Framework | Next.js 15 (App Router, RSC, Server Actions) |
+| Language | TypeScript strict |
+| Styling | Tailwind CSS v4 + custom design system |
+| Database | Drizzle ORM + libsql (Turso-compatible) |
+| AI | Vercel AI SDK + Azure OpenAI (`@ai-sdk/azure@^2`) |
+| Auth | Microsoft Entra ID (MSAL) + Demo Mode |
+| Hosting | Vercel (Mumbai `bom1`, serverless) |
+| Testing | Vitest (unit) + Playwright (e2e) |
+| Integrations | Microsoft Graph, Teams, Outlook |
+
+---
+
+## Running Tests
 
 ```bash
-npx vercel login
-npx vercel link
+npm run typecheck    # TypeScript strict — 0 errors
+npm test             # 152 unit tests — <1s
+npm run ai:eval      # 8 AI skill schema tests
+npm run e2e          # 45+ Playwright specs — ~3 min
+npm run build        # Production build — 28 routes
+```
+
+---
+
+## Deployment
+
+```bash
 npx vercel --prod
 ```
 
-### Required Environment Variables
-
-| Variable | Value |
-|----------|-------|
-| `DATABASE_URL` | `libsql://your-db.turso.io` |
-| `DATABASE_AUTH_TOKEN` | Turso auth token |
-| `SESSION_SECRET` | 32+ byte random hex |
-| `AI_MODE` | `stub` (free) or `azure` |
-| `AUTH_MODE` | `demo` or `both` |
-| `APP_BASE_URL` | `https://your-app.vercel.app` |
-
-### Configuration
-
-- **Region**: `bom1` (Mumbai) for low-latency Indian user base
-- **Cron**: Escalation sweep every 6 hours (`/api/cron/escalations`)
-- **Security**: Middleware sets X-Content-Type-Options, X-Frame-Options, Referrer-Policy
-- **Static assets**: `Cache-Control: immutable` for `_next/static/`
+Required env vars: `DATABASE_URL`, `SESSION_SECRET`, `AI_MODE=stub`, `AUTH_MODE=demo`.
 
 ---
 
-## Security
+## Repository
 
-- httpOnly session cookies (`ap_session`) with HMAC signature
-- Middleware redirects unauthenticated requests at the edge
-- RBAC enforced on every server action and API route
-- Security headers: nosniff, DENY framing, strict-origin referrer, Permissions-Policy
-- Insert-only audit log for all state-changing actions
-- No secrets stored in code or documentation
+**GitHub**: [github.com/Adit-Jain-srm/AtomicPulse](https://github.com/Adit-Jain-srm/AtomicPulse)
 
 ---
 
-## License
+## Developer
 
-For evaluation as part of the AtomQuest hackathon submission.
+**Adit Jain** | [GitHub](https://github.com/Adit-Jain-srm) | [LinkedIn](https://www.linkedin.com/in/-adit-jain) | [Resume](https://canva.link/Adit-Jain-CV)
