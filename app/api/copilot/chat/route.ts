@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await streamText({
+    const result = streamText({
       model: getModel("default"),
       system: SYSTEM_PROMPT,
       messages: messages.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content })) as any,
