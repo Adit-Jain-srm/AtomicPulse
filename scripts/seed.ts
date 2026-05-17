@@ -318,6 +318,53 @@ async function main() {
     }
   }
 
+  // ---- SHARED GOALS ----
+  console.log("→ shared goals (push from Morgan to Alex + Diego)");
+  // Morgan pushes one of Jordan's goals to Alex and Diego as a departmental KPI
+  const jordanSheet = lockedSheets.find((s) => {
+    const owner = users.find((u) => u.id === s.ownerId);
+    return owner?.email === "jordan@atomic.demo";
+  });
+  if (jordanSheet) {
+    const jordanGoals = allGoals.filter((g) => g.sheetId === jordanSheet.id);
+    const primaryGoal = jordanGoals[0];
+    if (primaryGoal) {
+      const linkId = uuid();
+      await db.insert(schema.sharedGoalLink).values({
+        id: linkId,
+        primaryGoalId: primaryGoal.id,
+        pushedById: mgrAlphaId,
+        note: "Align on this departmental KPI for Q1.",
+      });
+
+      // Push to Diego's and Alex's sheets
+      const recipientEmails = ["diego@atomic.demo", "alex@atomic.demo"];
+      for (const email of recipientEmails) {
+        const recipient = users.find((u) => u.email === email);
+        if (!recipient) continue;
+        const recipientSheet = lockedSheets.find((s) => s.ownerId === recipient.id);
+        if (!recipientSheet) continue;
+        await db.insert(schema.goal).values({
+          id: uuid(),
+          sheetId: recipientSheet.id,
+          thrustAreaId: primaryGoal.thrustAreaId,
+          title: primaryGoal.title,
+          description: primaryGoal.description,
+          uomType: primaryGoal.uomType,
+          targetValue: primaryGoal.targetValue,
+          targetDate: primaryGoal.targetDate,
+          weightageBp: 1000,
+          status: primaryGoal.status ?? "not_started",
+          source: "shared",
+          sharedLinkId: linkId,
+          position: 999,
+          currentActual: primaryGoal.currentActual,
+          computedScoreBp: primaryGoal.computedScoreBp,
+        });
+      }
+    }
+  }
+
   // ---- ESCALATION RULES ----
   console.log("→ default escalation rules");
   await db.insert(schema.escalationRule).values([
