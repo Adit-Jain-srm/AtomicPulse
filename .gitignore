@@ -5,6 +5,7 @@ build/
 dist/
 .env
 .env.local
+.env.production
 .env.development.local
 .env.test.local
 .env.production.local
@@ -29,3 +30,5 @@ dev.db-journal
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+.vercel

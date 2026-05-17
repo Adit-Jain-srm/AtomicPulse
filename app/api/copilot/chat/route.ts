@@ -5,6 +5,7 @@ import { getAiMode, getModel } from "@/lib/ai/gateway";
 import { classifyError, logAiFallback, timeoutSignal } from "@/lib/ai/live-with-fallback";
 
 export const runtime = "nodejs";
+export const maxDuration = 30;
 
 const SYSTEM_PROMPT = `
 You are AtomicPulse Copilot — an enterprise goal-setting and tracking assistant.

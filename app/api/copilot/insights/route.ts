@@ -5,6 +5,7 @@ import { getAiMode, getModel } from "@/lib/ai/gateway";
 import { getOrCreateSheetForUser, getActiveCycle, listGoalsForSheets, getCheckInsForGoals } from "@/lib/db/queries";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 export async function GET() {
   const session = await getSession();

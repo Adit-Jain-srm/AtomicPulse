@@ -12,7 +12,7 @@ import type { AiMode } from "./gateway";
  * runtime caller is a Next.js Route Handler that already runs server-side.
  */
 
-export const AI_CALL_TIMEOUT_MS = 8000;
+export const AI_CALL_TIMEOUT_MS = 25000;
 
 export function timeoutSignal(ms: number = AI_CALL_TIMEOUT_MS): AbortSignal {
   return AbortSignal.timeout(ms);
