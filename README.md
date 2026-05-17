@@ -19,25 +19,44 @@ Open `http://localhost:3000` → pick any of 12 demo personas. Everything works 
 
 ### For Judges: Environment Configuration
 
-Copy `.env.example` to `.env.local` — **no changes needed** for the demo:
+Copy `.env.example` to `.env.local` — **no changes needed** for the full demo:
 
 ```bash
 cp .env.example .env.local
 ```
 
-| Variable | Default | What It Does |
-|----------|---------|-------------|
-| `AI_MODE=stub` | Pre-set | AI Copilot works offline with deterministic responses — no API key needed |
-| `AUTH_MODE=demo` | Pre-set | Demo persona switcher on sign-in — no Azure/Entra setup needed |
-| `DATABASE_URL=file:./dev.db` | Pre-set | Local SQLite — no cloud database needed |
-| `DEMO_MODE_ENABLED=true` | Pre-set | Enables 12 pre-seeded personas (employee/manager/admin) |
+| Variable | Default | What It Enables |
+|----------|---------|-----------------|
+| `AI_MODE=stub` | Pre-set | **AI Copilot** responds with deterministic, pre-written insights (no API key needed). Covers: goal drafting, quarter summaries, KPI suggestions, risk detection. |
+| `AUTH_MODE=demo` | Pre-set | **Demo persona switcher** on sign-in page — 12 pre-seeded users across 3 roles. No Azure tenant needed. |
+| `DATABASE_URL=file:./dev.db` | Pre-set | **Local SQLite database** — zero cloud dependency. Schema + seed runs instantly. |
+| `DEMO_MODE_ENABLED=true` | Pre-set | Activates the role picker UI with employees, managers, and admins from a seeded organization. |
+| `SESSION_SECRET` | Pre-set | HMAC-signed httpOnly cookies for session auth. Change in production. |
 
-**Optional upgrades** (if you want to test live AI or SSO):
-- Set `AI_MODE=azure` + Azure OpenAI credentials → live GPT-4o copilot insights
-- Set `AUTH_MODE=both` + Entra credentials → Microsoft SSO alongside demo mode
-- Set `TEAMS_WEBHOOK_URL_DEFAULT` → real Teams adaptive card notifications
+**What you can test with defaults (zero config):**
+- Goal creation with validation (weightage=100%, min 10%, max 8 goals)
+- Manager approval workflow (approve & lock, return for rework)
+- Quarterly check-ins with live score computation (Min/Max/Timeline/Zero)
+- Shared goals (push KPI, read-only title/target, achievement sync)
+- AI Copilot chat (stub responses, streaming UX)
+- Performance analytics (QoQ trends, heatmap, manager effectiveness)
+- Escalation rules + admin audit trail
+- CSV/XLSX achievement exports
+- Real-time notification badge (SSE stream)
+- Responsive design (375px mobile → 1920px desktop)
+- Dark/light theme toggle
 
-All optional integrations fall back gracefully — the portal never breaks regardless of what's configured.
+**Optional upgrades** (live integrations — set credentials to activate):
+
+| Variable | Feature Unlocked |
+|----------|-----------------|
+| `AI_MODE=azure` + `AZURE_OPENAI_*` | Live GPT-4o generates real insights from your actual goal data |
+| `AUTH_MODE=both` + `AZURE_CLIENT_*` | Microsoft Entra SSO button appears alongside demo mode |
+| `GRAPH_SYNC_ENABLED=true` | Org hierarchy auto-syncs from Azure AD (manager chains, roles) |
+| `TEAMS_WEBHOOK_URL_DEFAULT` | Teams Adaptive Cards with deep links on every lifecycle event |
+| `GRAPH_MAIL_ENABLED=true` + `MAIL_FROM_USER_ID` | Outlook transactional emails (submit, approve, return, reminders) |
+
+All optional integrations **fall back gracefully** — the portal never breaks regardless of what's configured or missing.
 
 ---
 
