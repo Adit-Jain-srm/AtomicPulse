@@ -1,10 +1,18 @@
 stateDiagram-v2
-  [*] --> draft
-  draft --> submitted : submit (employee)
-  submitted --> in_review : manager opens
-  in_review --> draft : return_for_rework
-  in_review --> approved : approve
-  approved --> locked : auto on approve
-  locked --> reopened : admin unlock
-  reopened --> draft : admin or owner edits
-  locked --> [*]
+  [*] --> draft : Goal sheet created
+
+  draft --> submitted : Employee submits (100% weight valid)
+  submitted --> in_review : Manager opens review
+  submitted --> draft : Manager returns for rework
+  in_review --> draft : Manager returns for rework
+  submitted --> locked : Manager approves & locks
+  in_review --> locked : Manager approves & locks
+
+  locked --> reopened : Admin unlocks (audit logged)
+  reopened --> submitted : Employee re-submits
+
+  locked --> [*] : Check-ins open
+
+  note right of draft : Employee can edit freely
+  note right of locked : No edits without Admin intervention
+  note right of submitted : Awaiting manager review

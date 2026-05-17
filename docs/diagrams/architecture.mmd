@@ -1,37 +1,38 @@
 flowchart LR
-  subgraph Client[Browser]
-    UI["Next.js 16 RSC + Cache Components<br/>Tailwind + shadcn + Framer Motion"]
+  subgraph Client[Browser - Any Device]
+    UI["Next.js 15 App Router<br/>RSC + Server Actions<br/>Tailwind v4 + Framer Motion"]
   end
 
-  subgraph Vercel[Vercel Fluid Compute]
+  subgraph Vercel[Vercel Serverless - Mumbai]
     SA[Server Actions]
     RH[Route Handlers]
-    WDK["Workflow DevKit<br/>(escalations + cycles)"]
-    Cron[Vercel Cron]
-    AIG[AI Gateway]
-    RC[Runtime Cache]
+    MW[Edge Middleware<br/>Auth + Security Headers]
+    Cron["Cron Job (daily)<br/>Escalation Sweep"]
+    Cache["unstable_cache<br/>60-300s TTL + revalidateTag"]
+    SSE["SSE Stream<br/>/api/notifications/stream"]
   end
 
-  subgraph Neon[Neon Postgres + pgvector]
-    DB[("goals, check_ins,<br/>shared_goals, audit_log,<br/>cycles, users, orgs, embeddings")]
+  subgraph Turso[Turso - libsql Edge DB]
+    DB[("goals, check_ins,<br/>shared_goals, audit_log,<br/>escalations, users, orgs")]
   end
 
   subgraph Microsoft[Microsoft Cloud]
-    Entra["Entra ID / MSAL"]
-    Graph["Microsoft Graph<br/>users + manager chain"]
-    Teams["Teams Incoming Webhook<br/>Adaptive Cards"]
-    Outlook["Outlook via Graph"]
-    AOAI["Azure OpenAI<br/>gpt-4o + embeddings"]
+    Entra["Entra ID SSO<br/>MSAL Auth Code Flow"]
+    Graph["Microsoft Graph<br/>Org Sync + Manager Chains"]
+    Teams["Teams Webhook<br/>Adaptive Cards + Deep Links"]
+    Outlook["Outlook Email<br/>Graph sendMail"]
+    AOAI["Azure OpenAI gpt-4o<br/>AI Copilot + Insights"]
   end
 
-  UI -->|"RSC fetch"| SA
-  UI -->|"streaming AI"| RH
-  SA --> DB
-  RH --> AIG --> AOAI
-  WDK --> DB
-  WDK --> Teams
-  WDK --> Outlook
-  Cron --> WDK
+  UI -->|"RSC + Actions"| SA
+  UI -->|"Streaming AI"| RH
+  UI -->|"Live notifications"| SSE
+  MW -->|"Auth guard"| SA
+  SA --> Cache --> DB
+  RH --> AOAI
+  Cron --> DB
+  Cron --> Teams
+  Cron --> Outlook
   SA --> Graph
-  UI -->|"sign-in"| Entra
-  SA --> RC
+  UI -->|"SSO"| Entra
+  SA -->|"revalidateTag"| Cache
