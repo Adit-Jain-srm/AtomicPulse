@@ -12,21 +12,30 @@ async function ensureMigrationsApplied() {
 async function clearAll() {
   const db = getDb();
   console.log("→ wiping existing data…");
-  await db.delete(schema.auditEvent);
-  await db.delete(schema.approvalEvent);
-  await db.delete(schema.checkIn);
-  await db.delete(schema.goal);
-  await db.delete(schema.sharedGoalLink);
-  await db.delete(schema.goalSheet);
-  await db.delete(schema.checkInWindow);
-  await db.delete(schema.goalCycle);
-  await db.delete(schema.thrustArea);
-  await db.delete(schema.notification);
-  await db.delete(schema.escalationEvent);
-  await db.delete(schema.escalationRule);
-  await db.delete(schema.embedding);
-  await db.delete(schema.user);
-  await db.delete(schema.org);
+  const tables = [
+    schema.auditEvent,
+    schema.approvalEvent,
+    schema.checkIn,
+    schema.goal,
+    schema.sharedGoalLink,
+    schema.goalSheet,
+    schema.checkInWindow,
+    schema.goalCycle,
+    schema.thrustArea,
+    schema.notification,
+    schema.escalationEvent,
+    schema.escalationRule,
+    schema.embedding,
+    schema.user,
+    schema.org,
+  ];
+  for (const table of tables) {
+    try {
+      await db.delete(table);
+    } catch {
+      // Table may not exist on first run — safe to skip
+    }
+  }
 }
 
 async function main() {

@@ -16,7 +16,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run db:push
+      - run: npx drizzle-kit push --force
       - run: npm run db:seed
       - run: npm run typecheck
       - run: npm test
