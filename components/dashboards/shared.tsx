@@ -64,27 +64,6 @@ export function StatCard({
 }) {
   const Icon = iconName ? STAT_ICON_MAP[iconName] : IconProp;
 
-  // #region agent log
-  React.useEffect(() => {
-    fetch("http://127.0.0.1:7320/ingest/33fc5a09-ea00-441e-8503-a68614b86168", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "985259" },
-      body: JSON.stringify({
-        sessionId: "985259",
-        hypothesisId: "H1",
-        location: "components/dashboards/shared.tsx:StatCard",
-        message: "StatCard mounted",
-        data: {
-          label,
-          iconName: iconName ?? null,
-          iconPropType: IconProp ? typeof IconProp : "none",
-          resolvedIcon: Icon ? "yes" : "no",
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-  }, [label, iconName, IconProp, Icon]);
-  // #endregion
   const inner = (
     <motion.div
       initial={{ opacity: 0, y: 8 }}

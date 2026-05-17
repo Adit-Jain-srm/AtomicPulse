@@ -35,21 +35,6 @@ export default async function TeamPage() {
   const submitted = sheets.filter((s) => s.status !== "draft").length;
   const locked = sheets.filter((s) => s.status === "locked" || s.status === "approved").length;
 
-  // #region agent log
-  fetch("http://127.0.0.1:7320/ingest/33fc5a09-ea00-441e-8503-a68614b86168", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "985259" },
-    body: JSON.stringify({
-      sessionId: "985259",
-      hypothesisId: "H1",
-      location: "app/(app)/team/page.tsx:TeamPage",
-      message: "TeamPage render stats",
-      data: { totalReports, submitted, locked, role: data.role },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
-
   return (
     <div className="space-y-6">
       <PageHeader
