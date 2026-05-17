@@ -45,6 +45,9 @@ export async function signInAs(
 ): Promise<DemoUser> {
   const user = typeof who === "string" ? DEMO_USERS[who] : who;
 
+  // Authenticated sessions redirect /sign-in away from the persona switcher.
+  await page.request.post("/api/auth/sign-out").catch(() => {});
+
   await page.goto("/sign-in");
 
   // If the sign-in panel renders the hero view (when both Entra & Demo are
