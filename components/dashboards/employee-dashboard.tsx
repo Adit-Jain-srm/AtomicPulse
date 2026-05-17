@@ -190,35 +190,47 @@ export function EmployeeDashboard({
         </Card>
       </div>
 
-      <Card className="overflow-hidden">
-        <div className="flex items-center justify-between border-b border-[hsl(var(--border-subtle))] p-5">
-          <SectionHeader
-            title="AI insights"
-            description="Generated from your goal sheet and recent check-ins."
-          />
-          <Badge tone="ai">
-            <Sparkles className="size-3" /> Live
-          </Badge>
-        </div>
-        <CardContent className="grid gap-3 p-5 md:grid-cols-3">
-          <Insight
-            icon={AlertCircle}
-            title="2 goals at risk"
-            body="“Ship Goal Copilot GA” has slipped 2 weeks behind in your last check-in. Consider scoping down or pulling Sana in."
-          />
-          <Insight
-            icon={Zap}
-            title="Quick win available"
-            body="“Mentor 2 engineers to senior” is closer to done than your status suggests — log progress to lift your composite score by ~6%."
-          />
-          <Insight
-            icon={Sparkles}
-            title="Consider a new KPI"
-            body="No active goal covers reliability. The copilot suggests adding a Sev-1 incident zero-goal under Quality & Reliability."
-          />
-        </CardContent>
-      </Card>
+      <AiInsightsPanel />
     </div>
+  );
+}
+
+function AiInsightsPanel() {
+  const [insights, setInsights] = React.useState<Array<{ icon: string; title: string; body: string }>>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    fetch("/api/copilot/insights")
+      .then((r) => r.json())
+      .then((d) => setInsights(d.insights ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const iconMap: Record<string, typeof AlertCircle> = { alert: AlertCircle, zap: Zap, sparkles: Sparkles };
+
+  return (
+    <Card className="overflow-hidden">
+      <div className="flex items-center justify-between border-b border-[hsl(var(--border-subtle))] p-5">
+        <SectionHeader title="AI insights" description="Generated from your goal sheet and recent check-ins." />
+        <Badge tone="ai"><Sparkles className="size-3" /> Live</Badge>
+      </div>
+      <CardContent className="grid gap-3 p-5 md:grid-cols-3">
+        {loading ? (
+          <>
+            <div className="h-28 animate-pulse rounded-lg bg-[hsl(var(--surface-2))]" />
+            <div className="h-28 animate-pulse rounded-lg bg-[hsl(var(--surface-2))]" />
+            <div className="h-28 animate-pulse rounded-lg bg-[hsl(var(--surface-2))]" />
+          </>
+        ) : insights.length > 0 ? (
+          insights.map((ins, i) => (
+            <Insight key={i} icon={iconMap[ins.icon] ?? Sparkles} title={ins.title} body={ins.body} />
+          ))
+        ) : (
+          <div className="col-span-full py-6 text-center text-sm text-[hsl(var(--fg-muted))]">No insights available.</div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
