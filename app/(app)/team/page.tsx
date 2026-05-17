@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowRight, Users, Target, CheckCircle2, AlertCircle } from "lucide-react";
 import { SHEET_STATUS_LABELS, SHEET_STATUS_TONES } from "@/lib/domain/state-machine";
 import { computeScore, weightedSheetScore } from "@/lib/domain/scoring";
 
@@ -36,6 +35,21 @@ export default async function TeamPage() {
   const submitted = sheets.filter((s) => s.status !== "draft").length;
   const locked = sheets.filter((s) => s.status === "locked" || s.status === "approved").length;
 
+  // #region agent log
+  fetch("http://127.0.0.1:7320/ingest/33fc5a09-ea00-441e-8503-a68614b86168", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "985259" },
+    body: JSON.stringify({
+      sessionId: "985259",
+      hypothesisId: "H1",
+      location: "app/(app)/team/page.tsx:TeamPage",
+      message: "TeamPage render stats",
+      data: { totalReports, submitted, locked, role: data.role },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -45,10 +59,10 @@ export default async function TeamPage() {
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={Users} label="People" value={totalReports} hint={`${reports.filter((r) => r.role === "employee").length} employees`} />
-        <StatCard icon={Target} label="Sheets submitted" value={`${submitted}/${totalReports}`} />
-        <StatCard icon={CheckCircle2} label="Sheets locked" value={`${locked}/${totalReports}`} />
-        <StatCard icon={AlertCircle} label="Pending" value={totalReports - locked} />
+        <StatCard iconName="users" label="People" value={totalReports} hint={`${reports.filter((r) => r.role === "employee").length} employees`} />
+        <StatCard iconName="target" label="Sheets submitted" value={`${submitted}/${totalReports}`} />
+        <StatCard iconName="checkCircle2" label="Sheets locked" value={`${locked}/${totalReports}`} />
+        <StatCard iconName="alertCircle" label="Pending" value={totalReports - locked} />
       </div>
 
       <Card>

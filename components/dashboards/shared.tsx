@@ -3,14 +3,51 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
+import {
+  Users,
+  Target,
+  CheckCircle2,
+  AlertCircle,
+  FileCheck2,
+  CalendarCheck2,
+  ShieldAlert,
+  Sparkles,
+  Building2,
+  Activity,
+  ScrollText,
+  Layers,
+  Heart,
+  BarChart3,
+} from "lucide-react";
 import Link from "next/link";
+
+/** Serializable icon keys — safe to pass from Server Components. */
+export const STAT_ICON_MAP = {
+  users: Users,
+  target: Target,
+  checkCircle2: CheckCircle2,
+  alertCircle: AlertCircle,
+  fileCheck2: FileCheck2,
+  calendarCheck2: CalendarCheck2,
+  shieldAlert: ShieldAlert,
+  sparkles: Sparkles,
+  building2: Building2,
+  activity: Activity,
+  scrollText: ScrollText,
+  layers: Layers,
+  heart: Heart,
+  barChart3: BarChart3,
+} as const;
+
+export type StatIconName = keyof typeof STAT_ICON_MAP;
 
 export function StatCard({
   label,
   value,
   delta,
   hint,
-  icon: Icon,
+  icon: IconProp,
+  iconName,
   tone = "default",
   href,
 }: {
@@ -18,10 +55,36 @@ export function StatCard({
   value: React.ReactNode;
   delta?: { value: string; positive?: boolean };
   hint?: string;
+  /** Client-only: pass a Lucide component when the parent is already a Client Component. */
   icon?: LucideIcon;
+  /** Server-safe: pass a string key resolved inside this Client Component. */
+  iconName?: StatIconName;
   tone?: "default" | "ai";
   href?: string;
 }) {
+  const Icon = iconName ? STAT_ICON_MAP[iconName] : IconProp;
+
+  // #region agent log
+  React.useEffect(() => {
+    fetch("http://127.0.0.1:7320/ingest/33fc5a09-ea00-441e-8503-a68614b86168", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "985259" },
+      body: JSON.stringify({
+        sessionId: "985259",
+        hypothesisId: "H1",
+        location: "components/dashboards/shared.tsx:StatCard",
+        message: "StatCard mounted",
+        data: {
+          label,
+          iconName: iconName ?? null,
+          iconPropType: IconProp ? typeof IconProp : "none",
+          resolvedIcon: Icon ? "yes" : "no",
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+  }, [label, iconName, IconProp, Icon]);
+  // #endregion
   const inner = (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
