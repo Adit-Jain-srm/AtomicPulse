@@ -1,12 +1,22 @@
 # AtomicPulse
 
+[![DeepWiki](https://img.shields.io/badge/DeepWiki-Explore_Codebase-blue?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTQgMTlWNWEyIDIgMCAwIDEgMi0yaDEyYTIgMiAwIDAgMSAyIDJ2MTRhMiAyIDAgMCAxLTIgMkg2YTIgMiAwIDAgMS0yLTJ6Ii8+PHBhdGggZD0iTTggN2g4Ii8+PHBhdGggZD0iTTggMTFoOCIvPjxwYXRoIGQ9Ik04IDE1aDQiLz48L3N2Zz4=)](https://deepwiki.com/Adit-Jain-srm/AtomicPulse)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-black?logo=vercel)](https://atomic-pulse-aj5.vercel.app)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js_15-App_Router-000?logo=next.js)](https://nextjs.org/)
+[![Tests](https://img.shields.io/badge/Tests-152_Unit_+_45_E2E-brightgreen?logo=vitest)](https://vitest.dev/)
+[![Vercel](https://img.shields.io/badge/Deployed-Vercel_Mumbai-000?logo=vercel)](https://atomic-pulse-aj5.vercel.app)
+[![License](https://img.shields.io/badge/License-Hackathon_Evaluation-orange)]()
+
 ### AI-First Goal Setting & Tracking Portal
 
 > *"The performance OS that writes itself."*
 >
 > Set, align, and track every organizational goal — with an AI copilot that drafts SMART goals, flags risk in real-time, and keeps managers and employees in sync across Microsoft 365.
 
-**Live Demo**: [atomic-pulse-aj5.vercel.app](https://atomic-pulse-aj5.vercel.app) | **Source**: [GitHub](https://github.com/Adit-Jain-srm/AtomicPulse)
+**Live Demo**: [atomic-pulse-aj5.vercel.app](https://atomic-pulse-aj5.vercel.app) | **Source**: [GitHub](https://github.com/Adit-Jain-srm/AtomicPulse) | **Codebase Wiki**: [DeepWiki](https://deepwiki.com/Adit-Jain-srm/AtomicPulse)
+
+> **Explore the architecture interactively** — ask DeepWiki questions like *"Where is the scoring formula implemented?"* or *"How does the escalation chain work?"* and get instant answers with code references: [deepwiki.com/Adit-Jain-srm/AtomicPulse](https://deepwiki.com/Adit-Jain-srm/AtomicPulse)
 
 ---
 
