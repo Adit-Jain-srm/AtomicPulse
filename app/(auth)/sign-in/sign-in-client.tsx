@@ -96,7 +96,7 @@ export function SignInClient({
                 </div>
               </Link>
 
-              <h1 className="mt-12 text-4xl font-semibold leading-[1.05] tracking-tight md:text-5xl">
+              <h1 className="mt-12 text-4xl font-semibold leading-[1.15] tracking-tight md:text-5xl">
                 The performance OS that <span className="ai-text">writes itself</span>.
               </h1>
               <p className="mt-5 max-w-xl text-base leading-relaxed text-[hsl(var(--fg-secondary))]">
